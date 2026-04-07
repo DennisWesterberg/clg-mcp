@@ -52,7 +52,9 @@ function setByPath(target: unknown, path: string[]): void {
 }
 
 export function redactPaths(paths: string[]): (input: unknown) => unknown {
-  const parsed = paths.map((path) => path.split('.').filter(Boolean)).filter((parts) => parts.length > 0);
+  const parsed = paths
+    .map((path) => path.split('.').filter(Boolean))
+    .filter((parts) => parts.length > 0);
 
   return (input: unknown): unknown => {
     if (input === null || input === undefined) {

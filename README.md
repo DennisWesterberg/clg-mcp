@@ -54,20 +54,20 @@ server.registerTool('echo', { description: 'Echo' }, async () => ({
 
 ## Configuration
 
-| Field | Type | Required | Default | Description |
-|---|---|---:|---|---|
-| apiKey | string | Yes | - | CLG API key |
-| agentId | string | Yes | - | Agent identifier |
-| mandateRef | string | Yes | - | Mandate reference |
-| workflowId | string | No | `<agentId>-<timestamp>` | Workflow id |
-| endpoint | string | No | `https://api.clgplatform.com` | CLG endpoint |
-| failureMode | `'closed' \| 'open'` | No | `closed` | Behavior when CLG is unreachable |
-| timeoutMs | number | No | `5000` | CLG timeout |
-| redact | function | No | - | Input/output redaction hook |
-| beforeSend | function | No | - | Envelope mutation hook |
-| onDecision | function | No | - | Decision callback |
-| onOutcome | function | No | - | Outcome callback |
-| onError | function | No | - | Error callback |
+| Field       | Type                 | Required | Default                       | Description                      |
+| ----------- | -------------------- | -------: | ----------------------------- | -------------------------------- |
+| apiKey      | string               |      Yes | -                             | CLG API key                      |
+| agentId     | string               |      Yes | -                             | Agent identifier                 |
+| mandateRef  | string               |      Yes | -                             | Mandate reference                |
+| workflowId  | string               |       No | `<agentId>-<timestamp>`       | Workflow id                      |
+| endpoint    | string               |       No | `https://api.clgplatform.com` | CLG endpoint                     |
+| failureMode | `'closed' \| 'open'` |       No | `closed`                      | Behavior when CLG is unreachable |
+| timeoutMs   | number               |       No | `5000`                        | CLG timeout                      |
+| redact      | function             |       No | -                             | Input/output redaction hook      |
+| beforeSend  | function             |       No | -                             | Envelope mutation hook           |
+| onDecision  | function             |       No | -                             | Decision callback                |
+| onOutcome   | function             |       No | -                             | Outcome callback                 |
+| onError     | function             |       No | -                             | Error callback                   |
 
 ## Mandate setup
 
@@ -84,11 +84,7 @@ Use `redactPaths` to mask sensitive fields before payloads leave process memory.
 ## Error handling
 
 ```ts
-import {
-  CLGDeniedError,
-  CLGUnreachableError,
-  CLGToolExecutionError,
-} from '@clgplatform/mcp';
+import { CLGDeniedError, CLGUnreachableError, CLGToolExecutionError } from '@clgplatform/mcp';
 
 try {
   // guarded tool execution

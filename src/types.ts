@@ -1,8 +1,6 @@
 // Copyright (c) 2026 Aistrateg Malmö AB. Licensed under BUSL-1.1.
 import type { EvaluateDecisionResult, Receipt } from '@clgplatform/sdk';
 
-export const TYPES_MODULE_VERSION = '1.0.0-beta.1';
-
 export interface DecisionEnvelope {
   workflow_id: string;
   task_id: string;

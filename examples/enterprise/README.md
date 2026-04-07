@@ -1,6 +1,7 @@
 # Enterprise example
 
 This example registers:
+
 - create-invoice
 - lookup-customer
 - process-payment

@@ -20,8 +20,12 @@ server.registerTool('lookup-customer', { description: 'Lookup customer' }, async
   content: [{ type: 'text', text: 'customer-found' }],
 }));
 
-server.registerTool('process-payment', { description: 'Process payment (expected deny)' }, async () => ({
-  content: [{ type: 'text', text: 'payment-processed' }],
-}));
+server.registerTool(
+  'process-payment',
+  { description: 'Process payment (expected deny)' },
+  async () => ({
+    content: [{ type: 'text', text: 'payment-processed' }],
+  }),
+);
 
 console.log('Enterprise example ready. process-payment should be denied by mandate.');

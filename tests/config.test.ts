@@ -78,20 +78,20 @@ describe('normalizeConfig', () => {
   });
 
   it('rejects non-function callbacks', () => {
-    expect(() => normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', onError: 1 as never })).toThrow(
-      CLGConfigError,
-    );
+    expect(() =>
+      normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', onError: 1 as never }),
+    ).toThrow(CLGConfigError);
     expect(() =>
       normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', beforeSend: 'x' as never }),
     ).toThrow(CLGConfigError);
   });
 
   it('rejects non-positive or non-integer timeout', () => {
-    expect(() => normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', timeoutMs: 0 })).toThrow(
-      CLGConfigError,
-    );
-    expect(() => normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', timeoutMs: 1.2 })).toThrow(
-      CLGConfigError,
-    );
+    expect(() =>
+      normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', timeoutMs: 0 }),
+    ).toThrow(CLGConfigError);
+    expect(() =>
+      normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', timeoutMs: 1.2 }),
+    ).toThrow(CLGConfigError);
   });
 });

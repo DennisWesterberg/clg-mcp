@@ -84,7 +84,9 @@ describe('redactPaths', () => {
   it('preserves unrelated deep objects', () => {
     const input = { one: { two: { three: 'ok' } }, keep: { x: 1 } };
     const out = redactPaths(['one.two.three'])(input) as Record<string, unknown>;
-    expect(((out.one as Record<string, unknown>).two as Record<string, unknown>).three).toBe('[REDACTED]');
+    expect(((out.one as Record<string, unknown>).two as Record<string, unknown>).three).toBe(
+      '[REDACTED]',
+    );
     expect((out.keep as Record<string, unknown>).x).toBe(1);
   });
 
@@ -96,7 +98,9 @@ describe('redactPaths', () => {
       cursor = cursor.next as Record<string, unknown>;
     }
     const out = redactPaths(['data.next.value'])(input) as Record<string, unknown>;
-    expect(((out.data as Record<string, unknown>).next as Record<string, unknown>).value).toBe('[REDACTED]');
+    expect(((out.data as Record<string, unknown>).next as Record<string, unknown>).value).toBe(
+      '[REDACTED]',
+    );
   });
 
   it('skips when leaf key does not exist', () => {

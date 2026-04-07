@@ -20,7 +20,9 @@ export function withCLG(server: McpServer, config: CLGConfig): McpServer {
         return Reflect.get(target, prop, receiver);
       }
 
-      const original = (Reflect.get(target, prop, receiver) as (...args: unknown[]) => RegisteredTool).bind(target);
+      const original = (
+        Reflect.get(target, prop, receiver) as (...args: unknown[]) => RegisteredTool
+      ).bind(target);
 
       return (...args: unknown[]): RegisteredTool => {
         if (args.length < 3 || typeof args[0] !== 'string' || typeof args[2] !== 'function') {

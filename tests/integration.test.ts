@@ -53,9 +53,9 @@ describe('integration (real McpServer + msw)', () => {
       content: [{ type: 'text', text: 'nope' }],
     }));
 
-    await expect(
-      (tool.handler as (extra: unknown) => Promise<unknown>)({}),
-    ).rejects.toBeInstanceOf(CLGDeniedError);
+    await expect((tool.handler as (extra: unknown) => Promise<unknown>)({})).rejects.toBeInstanceOf(
+      CLGDeniedError,
+    );
   });
 
   it('timeout/unreachable closed end-to-end', async () => {
@@ -72,9 +72,9 @@ describe('integration (real McpServer + msw)', () => {
       content: [{ type: 'text', text: 'ok' }],
     }));
 
-    await expect(
-      (tool.handler as (extra: unknown) => Promise<unknown>)({}),
-    ).rejects.toBeInstanceOf(CLGUnreachableError);
+    await expect((tool.handler as (extra: unknown) => Promise<unknown>)({})).rejects.toBeInstanceOf(
+      CLGUnreachableError,
+    );
   });
 
   it('tool crash end-to-end', async () => {
@@ -96,8 +96,8 @@ describe('integration (real McpServer + msw)', () => {
       throw new Error('boom');
     });
 
-    await expect(
-      (tool.handler as (extra: unknown) => Promise<unknown>)({}),
-    ).rejects.toBeInstanceOf(CLGToolExecutionError);
+    await expect((tool.handler as (extra: unknown) => Promise<unknown>)({})).rejects.toBeInstanceOf(
+      CLGToolExecutionError,
+    );
   });
 });

@@ -27,13 +27,17 @@ export function normalizeConfig(config: CLGConfig): NormalizedCLGConfig {
     }
   }
 
-  if (config.failureMode !== undefined && config.failureMode !== 'closed' && config.failureMode !== 'open') {
+  if (
+    config.failureMode !== undefined &&
+    config.failureMode !== 'closed' &&
+    config.failureMode !== 'open'
+  ) {
     issues.push("failureMode must be either 'closed' or 'open'");
   }
 
   if (
-    config.timeoutMs !== undefined
-    && (!Number.isInteger(config.timeoutMs) || config.timeoutMs <= 0)
+    config.timeoutMs !== undefined &&
+    (!Number.isInteger(config.timeoutMs) || config.timeoutMs <= 0)
   ) {
     issues.push('timeoutMs must be a positive integer when provided');
   }

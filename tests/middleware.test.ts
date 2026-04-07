@@ -33,13 +33,22 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
     });
 
     const cfg = normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', workflowId: 'wf' });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
-    const handler = wrapToolHandler(sidecar, cfg, 'echo', async (args: { value: number }) => ({ ok: args.value + 1 }));
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
+    const handler = wrapToolHandler(sidecar, cfg, 'echo', async (args: { value: number }) => ({
+      ok: args.value + 1,
+    }));
 
     const out = await handler({ value: 1 });
     expect(out).toEqual({ ok: 2 });
 
-    const receiptPayload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<string, unknown>;
+    const receiptPayload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
     expect(receiptPayload.decision_type).toBe('tool-outcome');
     expect(receiptPayload.previous_receipt_hashes).toEqual(['h1']);
   });
@@ -48,7 +57,11 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
     const errors: unknown[] = [];
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(
-        responseOf({ ok: true, status: 200, body: { decision: 'approve', reason: null, receipt: { receipt_hash: 'h1' } } }),
+        responseOf({
+          ok: true,
+          status: 200,
+          body: { decision: 'approve', reason: null, receipt: { receipt_hash: 'h1' } },
+        }),
       )
       .mockRejectedValueOnce(new Error('receipt network failure'));
 
@@ -58,14 +71,20 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
       mandateRef: 'm',
       onError: (err) => errors.push(err),
     });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'echo', async () => ({ final: 'value' }));
 
     await expect(handler()).resolves.toEqual({ final: 'value' });
     expect(errors).toHaveLength(1);
     const err = errors[0] as CLGUnreachableError;
     expect(err).toBeInstanceOf(CLGUnreachableError);
-    expect(err.message).toContain('Outcome receipt submission failed after successful tool execution');
+    expect(err.message).toContain(
+      'Outcome receipt submission failed after successful tool execution',
+    );
   });
 
   it('approve -> tool crash -> failure receipt and CLGToolExecutionError', async () => {
@@ -82,13 +101,20 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
     });
 
     const cfg = normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm' });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'explode', async () => {
       throw new Error('boom');
     });
 
     await expect(handler()).rejects.toBeInstanceOf(CLGToolExecutionError);
-    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<string, unknown>;
+    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
     expect(payload.decision_type).toBe('tool-outcome-failed');
     expect((payload.output as Record<string, unknown>).status).toBe('failed');
   });
@@ -97,7 +123,11 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
     const errors: unknown[] = [];
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(
-        responseOf({ ok: true, status: 200, body: { decision: 'approve', reason: null, receipt: { receipt_hash: 'h1' } } }),
+        responseOf({
+          ok: true,
+          status: 200,
+          body: { decision: 'approve', reason: null, receipt: { receipt_hash: 'h1' } },
+        }),
       )
       .mockRejectedValueOnce(new Error('receipt failure'));
 
@@ -107,7 +137,11 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
       mandateRef: 'm',
       onError: (err) => errors.push(err),
     });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'explode', async () => {
       throw new Error('primary tool crash');
     });
@@ -123,20 +157,30 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
 
     expect(errors).toHaveLength(1);
     expect(errors[0]).toBeInstanceOf(CLGUnreachableError);
-    expect((errors[0] as Error).message).toContain('Failure outcome receipt submission failed after tool crash');
+    expect((errors[0] as Error).message).toContain(
+      'Failure outcome receipt submission failed after tool crash',
+    );
   });
 
   it('deny -> tool not executed -> CLGDeniedError', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
       if (url.endsWith('/v1/decisions/evaluate')) {
-        return responseOf({ ok: true, status: 200, body: { decision: 'deny', reason: 'blocked', receipt: { receipt_id: 'r1' } } });
+        return responseOf({
+          ok: true,
+          status: 200,
+          body: { decision: 'deny', reason: 'blocked', receipt: { receipt_id: 'r1' } },
+        });
       }
       return responseOf({ ok: true, status: 200, body: {} });
     });
 
     const cfg = normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm' });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const tool = vi.fn().mockResolvedValue('ok');
 
     const handler = wrapToolHandler(sidecar, cfg, 'deny-me', tool);
@@ -147,8 +191,17 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
   it('closed mode on CLG error blocks tool', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network down'));
 
-    const cfg = normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', failureMode: 'closed' });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const cfg = normalizeConfig({
+      apiKey: 'k',
+      agentId: 'a',
+      mandateRef: 'm',
+      failureMode: 'closed',
+    });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const tool = vi.fn().mockResolvedValue('ok');
     const handler = wrapToolHandler(sidecar, cfg, 'echo', tool);
 
@@ -162,14 +215,26 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
       .mockRejectedValueOnce(new Error('network down'))
       .mockResolvedValueOnce(responseOf({ ok: true, status: 200, body: { receipt_hash: 'u1' } }));
 
-    const cfg = normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm', failureMode: 'open' });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const cfg = normalizeConfig({
+      apiKey: 'k',
+      agentId: 'a',
+      mandateRef: 'm',
+      failureMode: 'open',
+    });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const tool = vi.fn().mockResolvedValue({ ok: true });
 
     const handler = wrapToolHandler(sidecar, cfg, 'echo', tool);
     await expect(handler()).resolves.toEqual({ ok: true });
 
-    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<string, unknown>;
+    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
     expect(payload.decision_type).toBe('tool-outcome-unverified');
   });
 
@@ -192,11 +257,21 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
         return value;
       },
     });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
-    const handler = wrapToolHandler(sidecar, cfg, 'echo', async () => ({ secret: 'raw', ok: true }));
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
+    const handler = wrapToolHandler(sidecar, cfg, 'echo', async () => ({
+      secret: 'raw',
+      ok: true,
+    }));
 
     await expect(handler()).resolves.toEqual({ secret: 'raw', ok: true });
-    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<string, unknown>;
+    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
     expect((payload.output as Record<string, unknown>).secret).toBe('[REDACTED]');
   });
 
@@ -219,13 +294,20 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
         return value;
       },
     });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'echo', async () => {
       throw new Error('secret-failure');
     });
 
     await expect(handler()).rejects.toThrow('secret-failure');
-    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<string, unknown>;
+    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
     expect((payload.output as Record<string, unknown>).error_message).toBe('[REDACTED]');
   });
 
@@ -242,7 +324,11 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
       failureMode: 'open',
       onError: (err) => errors.push(err),
     });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'echo', async () => {
       throw new Error('tool-failed-hard');
     });
@@ -264,7 +350,11 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
       failureMode: 'open',
       onError: (err) => errors.push(err),
     });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'echo', async () => ({ ok: true }));
 
     await expect(handler()).resolves.toEqual({ ok: true });
@@ -275,13 +365,21 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
       if (url.endsWith('/v1/decisions/evaluate')) {
-        return responseOf({ ok: true, status: 200, body: { decision: 'deny', reason: null, receipt: {} } });
+        return responseOf({
+          ok: true,
+          status: 200,
+          body: { decision: 'deny', reason: null, receipt: {} },
+        });
       }
       return responseOf({ ok: true, status: 200, body: {} });
     });
 
     const cfg = normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm' });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'deny-no-id', async () => ({ ok: true }));
 
     try {
@@ -306,13 +404,20 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
     });
 
     const cfg = normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm' });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'throw-string', async () => {
       throw 'non-error';
     });
 
     await expect(handler()).rejects.toBeInstanceOf(CLGToolExecutionError);
-    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<string, unknown>;
+    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
     const output = payload.output as Record<string, unknown>;
     expect(output.error_name).toBe('Error');
     expect(output.error_message).toBe('non-error');
@@ -322,17 +427,28 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
       if (url.endsWith('/v1/decisions/evaluate')) {
-        return responseOf({ ok: true, status: 200, body: { decision: 'approve', reason: null, receipt: {} } });
+        return responseOf({
+          ok: true,
+          status: 200,
+          body: { decision: 'approve', reason: null, receipt: {} },
+        });
       }
       return responseOf({ ok: true, status: 200, body: { receipt_hash: 'h2' } });
     });
 
     const cfg = normalizeConfig({ apiKey: 'k', agentId: 'a', mandateRef: 'm' });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
     const handler = wrapToolHandler(sidecar, cfg, 'echo', async () => ({ ok: true }));
 
     await expect(handler()).resolves.toEqual({ ok: true });
-    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<string, unknown>;
+    const payload = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
     expect(payload.previous_receipt_hashes).toBeUndefined();
   });
 
@@ -371,8 +487,14 @@ describe('wrapToolHandler (real SDK, HTTP mocked)', () => {
       onError: () => calls.push('onError'),
     });
 
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
-    const handler = wrapToolHandler(sidecar, cfg, 'echo', async (_args: { secret: string }) => ({ ok: true }));
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
+    const handler = wrapToolHandler(sidecar, cfg, 'echo', async (_args: { secret: string }) => ({
+      ok: true,
+    }));
 
     const out = await handler({ secret: 'raw' });
     expect(out).toEqual({ ok: true });

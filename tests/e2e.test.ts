@@ -85,10 +85,18 @@ maybeDescribe('e2e (mock stack with CLG endpoint shape)', () => {
       endpoint: baseUrl,
       workflowId: 'wf-e2e',
     });
-    const sidecar = new CLGSidecar({ apiUrl: cfg.endpoint, apiKey: cfg.apiKey, timeoutMs: cfg.timeoutMs });
+    const sidecar = new CLGSidecar({
+      apiUrl: cfg.endpoint,
+      apiKey: cfg.apiKey,
+      timeoutMs: cfg.timeoutMs,
+    });
 
-    const approveHandler = wrapToolHandler(sidecar, cfg, 'allow-tool', async () => ({ status: 'ok' }));
-    const denyHandler = wrapToolHandler(sidecar, cfg, 'deny-tool', async () => ({ status: 'should-not-run' }));
+    const approveHandler = wrapToolHandler(sidecar, cfg, 'allow-tool', async () => ({
+      status: 'ok',
+    }));
+    const denyHandler = wrapToolHandler(sidecar, cfg, 'deny-tool', async () => ({
+      status: 'should-not-run',
+    }));
 
     const approveOut = await approveHandler();
     expect((approveOut as { status: string }).status).toBe('ok');

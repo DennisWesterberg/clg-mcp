@@ -18,7 +18,11 @@ function maybeRedact(config: NormalizedCLGConfig, value: unknown): unknown {
   return config.redact ? config.redact(value) : value;
 }
 
-function makeEnvelope(toolName: string, toolInput: unknown, config: NormalizedCLGConfig): DecisionEnvelope {
+function makeEnvelope(
+  toolName: string,
+  toolInput: unknown,
+  config: NormalizedCLGConfig,
+): DecisionEnvelope {
   const base: DecisionEnvelope = {
     workflow_id: config.workflowId,
     task_id: randomUUID(),
@@ -78,7 +82,9 @@ export function wrapToolHandler<TArgs extends unknown[], TResult>(
             decision_value: toolName,
           });
         } catch (receiptError) {
-          config.onError?.(new CLGUnreachableError('Failed to submit unverified outcome receipt', receiptError));
+          config.onError?.(
+            new CLGUnreachableError('Failed to submit unverified outcome receipt', receiptError),
+          );
         }
         return result;
       } catch (toolError) {
@@ -98,7 +104,10 @@ export function wrapToolHandler<TArgs extends unknown[], TResult>(
           });
         } catch (receiptError) {
           config.onError?.(
-            new CLGUnreachableError('Failed to submit unverified failed outcome receipt', receiptError),
+            new CLGUnreachableError(
+              'Failed to submit unverified failed outcome receipt',
+              receiptError,
+            ),
           );
         }
         throw toolError;
@@ -119,7 +128,10 @@ export function wrapToolHandler<TArgs extends unknown[], TResult>(
     try {
       const result = await Promise.resolve(originalHandler(...args));
       const decisionReceipt = asRecord(decisionResult.receipt);
-      const previous = typeof decisionReceipt.receipt_hash === 'string' ? [decisionReceipt.receipt_hash] : undefined;
+      const previous =
+        typeof decisionReceipt.receipt_hash === 'string'
+          ? [decisionReceipt.receipt_hash]
+          : undefined;
 
       try {
         await createOutcomeReceipt(sidecar, config, {
@@ -144,7 +156,10 @@ export function wrapToolHandler<TArgs extends unknown[], TResult>(
       return result;
     } catch (toolError) {
       const decisionReceipt = asRecord(decisionResult.receipt);
-      const previous = typeof decisionReceipt.receipt_hash === 'string' ? [decisionReceipt.receipt_hash] : undefined;
+      const previous =
+        typeof decisionReceipt.receipt_hash === 'string'
+          ? [decisionReceipt.receipt_hash]
+          : undefined;
 
       try {
         await createOutcomeReceipt(sidecar, config, {

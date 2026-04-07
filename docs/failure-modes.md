@@ -5,6 +5,7 @@
 When CLG decision evaluation fails (timeout/network/server error), tool execution is blocked and `CLGUnreachableError` is thrown.
 
 Recommended for:
+
 - regulated production workloads
 - high-risk automations
 - strict accountability requirements
@@ -14,6 +15,7 @@ Recommended for:
 When CLG decision evaluation fails, tool execution continues. Wrapper attempts to submit an `tool-outcome-unverified` receipt best-effort.
 
 Recommended for:
+
 - low-risk internal workflows
 - developer sandboxes
 - temporary degraded operation with observability
