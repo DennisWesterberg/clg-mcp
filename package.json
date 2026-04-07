@@ -1,6 +1,6 @@
 {
   "name": "@clgplatform/mcp",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Official CLG wrapper for Model Context Protocol: tamper-evident decision and outcome receipts and real-time mandate enforcement for MCP tool calls.",
   "keywords": [
     "mcp",
@@ -13,13 +13,13 @@
     "mandate",
     "audit-trail"
   ],
-  "homepage": "https://clgplatform.com",
+  "homepage": "https://github.com/DennisWesterberg/clg-mcp#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/clgplatform/clg-mcp.git"
+    "url": "git+https://github.com/DennisWesterberg/clg-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/clgplatform/clg-mcp/issues"
+    "url": "https://github.com/DennisWesterberg/clg-mcp/issues"
   },
   "author": "Aistrateg Malmö AB <dennis@aistrateg.se>",
   "license": "BUSL-1.1",
