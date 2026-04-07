@@ -8,7 +8,7 @@ Tamper-evident decision and outcome receipts for Model Context Protocol tool cal
 - Out of scope: MCP resources, MCP prompts, transports other than standard MCP server, verification tooling, multi-workflow chaining.
 
 ![CI](https://img.shields.io/badge/ci-pending-lightgrey)
-![Version](https://img.shields.io/badge/version-1.0.0--beta.1-blue)
+![Version](https://img.shields.io/badge/version-1.0.0--beta.2-blue)
 ![License](https://img.shields.io/badge/license-BUSL--1.1-orange)
 
 ## What it does
@@ -17,7 +17,7 @@ Tamper-evident decision and outcome receipts for Model Context Protocol tool cal
 
 ## What this package does NOT do
 
-- Does not perform local verification of receipts (verification is a future capability).
+- Does not perform local verification of receipts. Use [`@clgplatform/verify`](https://github.com/DennisWesterberg/clg-verify) for standalone cryptographic verification of signed receipts and receipt chains.
 - Does not provide a replay or audit export API in v1.
 - Does not guarantee AI Act compliance by itself; it provides technical controls that support an organization's compliance program.
 - Does not manage mandates — mandates are defined and stored in the CLG platform.
@@ -34,6 +34,34 @@ Tamper-evident decision and outcome receipts for Model Context Protocol tool cal
 ```bash
 npm install @clgplatform/mcp
 ```
+
+## Getting started
+
+Before running the wrapper you need three things from clgplatform.com: an API key, an agent, and a mandate. A new account starts with a default permissive mandate so you can try the wrapper immediately.
+
+1. **Create an account** at https://clgplatform.com
+2. **Create an API key** under Settings → API Keys. Copy it immediately (shown once).
+3. **Register an agent** under Agents → Create Agent. Use any external ID, for example `my-first-agent`.
+4. **Use the default mandate** (created automatically on signup) by setting `mandateRef: "default"` in your wrapper config. Or create a custom mandate under Settings → Mandates.
+
+Your first MCP server with CLG:
+
+```ts
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { withCLG } from '@clgplatform/mcp';
+
+const server = withCLG(new McpServer({ name: 'demo', version: '1.0.0' }), {
+  apiKey: process.env.CLG_API_KEY!,
+  agentId: 'my-first-agent',
+  mandateRef: 'default',
+});
+
+server.registerTool('echo', { description: 'Echo' }, async (args) => ({
+  content: [{ type: 'text', text: JSON.stringify(args) }],
+}));
+```
+
+Run it, call the tool, and see the signed receipts appear in the Receipts view on clgplatform.com.
 
 ## Quick start
 
@@ -102,6 +130,17 @@ try {
 ## Compatibility
 
 See `docs/compatibility.md`.
+
+## Verifying receipts
+
+Receipts are signed with ECDSA-P256 and can be verified independently using `@clgplatform/verify`:
+
+```bash
+npm install -g @clgplatform/verify
+clg-verify receipt path/to/receipt.json
+```
+
+See https://github.com/DennisWesterberg/clg-verify for details.
 
 ## Examples
 
