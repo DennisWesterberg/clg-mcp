@@ -1,52 +1,112 @@
-# CLG MCP Wrapper
+# @clgplatform/mcp
 
-MCP (Model Context Protocol) wrapper for CLG Platform mandate evaluation.
+Official CLG wrapper for Model Context Protocol.
+
+![CI](https://img.shields.io/badge/ci-pending-lightgrey)
+![Version](https://img.shields.io/badge/version-1.0.0--beta.1-blue)
+![License](https://img.shields.io/badge/license-BUSL--1.1-orange)
+
+## What it does
+
+`@clgplatform/mcp` wraps MCP tool execution with mandate evaluation and signed CLG receipts. It provides deterministic, replayable decision and outcome tracing for every guarded tool call.
+
+## Why
+
+- Supports AI Act aligned governance and auditability patterns.
+- Enforces mandate-based accountability before tool execution.
+- Produces cryptographically chained decision/outcome evidence.
 
 ## Installation
 
 ```bash
-npm install clg-mcp
+npm install @clgplatform/mcp
 ```
 
 ## Quick start
 
 ```ts
-import { CLGMCPWrapper } from 'clg-mcp';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { withCLG } from '@clgplatform/mcp';
 
-const mcp = new CLGMCPWrapper({
-  apiUrl: 'https://api.clgplatform.com',
+const server = withCLG(new McpServer({ name: 'demo', version: '1.0.0' }), {
   apiKey: process.env.CLG_API_KEY!,
-  agentId: 'agent-001',
-  workflowId: 'workflow-001',
+  agentId: 'demo-agent',
+  mandateRef: 'mandates/default',
 });
 
-const result = await mcp.guard(
-  { toolName: 'invoice:create', toolInput: { amount: 100 } },
-  async () => ({ invoiceId: 'inv-1' })
-);
-
-console.log(result.receipt.receipt_hash);
+server.registerTool('echo', {
+  description: 'Echo input',
+  inputSchema: { text: { type: 'string' } },
+}, async (args) => ({
+  content: [{ type: 'text', text: String(args.text ?? '') }],
+}));
 ```
 
-## API
+## Configuration
 
-### `CLGMCPWrapper`
+| Field | Type | Required | Default | Description |
+|---|---|---:|---|---|
+| apiKey | string | Yes | - | CLG API key |
+| agentId | string | Yes | - | Agent identifier |
+| mandateRef | string | Yes | - | Mandate reference |
+| workflowId | string | No | `<agentId>-<timestamp>` | Workflow id |
+| endpoint | string | No | `https://api.clgplatform.com` | CLG endpoint |
+| failureMode | `'closed' \| 'open'` | No | `closed` | Behavior when CLG is unreachable |
+| timeoutMs | number | No | `5000` | CLG timeout |
+| redact | function | No | - | Input/output redaction hook |
+| beforeSend | function | No | - | Envelope mutation hook |
+| onDecision | function | No | - | Decision callback |
+| onOutcome | function | No | - | Outcome callback |
+| onError | function | No | - | Error callback |
 
-Constructor options:
-- `apiUrl`: CLG Platform base URL
-- `apiKey`: API key (live key)
-- `agentId`: Agent identifier
-- `workflowId`: Workflow/context identifier
-- `timeoutMs` (optional): Request timeout in ms (default 5000)
+## Mandate setup
 
-#### `evaluateTool(context, mandateRef?)`
+Create mandates in CLG platform and reference them via `mandateRef` in wrapper config. See CLG docs: https://clgplatform.com
 
-Evaluates a tool call against CLG mandates. Returns `{ approved: boolean, reason: string | null, receipt }`.
+## Failure modes
 
-#### `guard(context, toolFn, mandateRef?)`
+See `docs/failure-modes.md` for fail-closed and fail-open guidance and recommendations.
 
-Shorthand: evaluates, then runs `toolFn` if approved. Returns `{ result, receipt }` or throws with denied reason.
+## Redaction
+
+Use `redactPaths` for deterministic masking before payloads leave process memory. See `docs/redaction.md`.
+
+## Error handling
+
+```ts
+import {
+  CLGDeniedError,
+  CLGUnreachableError,
+  CLGToolExecutionError,
+} from '@clgplatform/mcp';
+
+try {
+  // guarded tool execution
+} catch (error) {
+  if (error instanceof CLGDeniedError) {
+    // denied by mandate
+  } else if (error instanceof CLGUnreachableError) {
+    // CLG unavailable
+  } else if (error instanceof CLGToolExecutionError) {
+    // tool failed after approval
+  }
+}
+```
+
+## Compatibility
+
+See `docs/compatibility.md`.
+
+## Examples
+
+- `examples/basic-server`
+- `examples/before-after`
+- `examples/enterprise`
 
 ## License
 
-MIT
+BUSL-1.1. Production use requires commercial license. Contact dennis@aistrateg.se.
+
+## Status
+
+Beta. Production use requires commercial license.

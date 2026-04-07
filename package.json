@@ -1,34 +1,77 @@
 {
-  "name": "clg-mcp",
-  "version": "1.0.0",
-  "description": "CLG MCP Wrapper: integrate CLG mandate evaluation into MCP workflows",
+  "name": "@clgplatform/mcp",
+  "version": "1.0.0-beta.1",
+  "description": "Official CLG wrapper for Model Context Protocol: signed decision receipts, mandate enforcement, and causal liability attribution for MCP tool calls.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-governance",
+    "ai-accountability",
+    "eu-ai-act",
+    "clg",
+    "decision-receipts",
+    "mandate",
+    "audit-trail"
+  ],
+  "homepage": "https://clgplatform.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clgplatform/clg-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/clgplatform/clg-mcp/issues"
+  },
+  "author": "Aistrateg Malmö AB <dennis@aistrateg.se>",
+  "license": "BUSL-1.1",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "build": "tsc",
-    "clean": "rm -rf dist",
-    "prepack": "npm run clean && npm run build"
+    "build": "tsup",
+    "clean": "rm -rf dist coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:e2e": "vitest run tests/e2e.test.ts",
+    "prepublishOnly": "npm run clean && npm run typecheck && npm run lint && npm run test:coverage && npm run build"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": ">=1.0.0 <2.0.0"
   },
   "dependencies": {
-    "@clgplatform/sdk": "file:../clg-platform/sdk"
+    "@clgplatform/sdk": "^1.1.0"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@types/node": "^22.13.11",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
     "@vitest/coverage-v8": "^2.1.9",
+    "eslint": "^9.25.1",
+    "msw": "^2.7.3",
+    "prettier": "^3.5.3",
+    "tsup": "^8.5.0",
     "typescript": "^5.8.2",
     "vitest": "^2.1.9"
-  },
-  "license": "MIT"
+  }
 }
