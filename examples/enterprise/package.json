@@ -1,8 +1,19 @@
 {
-  "name": "enterprise-example",
+  "name": "@clgplatform/mcp-example-enterprise",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node src/server.ts"
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clgplatform/mcp": "file:../..",
+    "@clgplatform/sdk": "^1.1.0",
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3",
+    "@types/node": "^22.19.17"
   }
 }

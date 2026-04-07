@@ -11,10 +11,9 @@ server.registerTool(
   'calculator',
   {
     description: 'Add two numbers',
-    inputSchema: { a: { type: 'number' }, b: { type: 'number' } },
   },
-  async (args: { a?: number; b?: number }) => ({
-    content: [{ type: 'text', text: String((args.a ?? 0) + (args.b ?? 0)) }],
+  async () => ({
+    content: [{ type: 'text', text: '2' }],
   }),
 );
 

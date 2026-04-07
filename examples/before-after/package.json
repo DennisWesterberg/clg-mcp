@@ -1,9 +1,10 @@
 {
-  "name": "@clgplatform/mcp-example-basic-server",
+  "name": "@clgplatform/mcp-example-before-after",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx src/server.ts",
+    "start:without": "tsx without-clg.ts",
+    "start:with": "tsx with-clg.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
