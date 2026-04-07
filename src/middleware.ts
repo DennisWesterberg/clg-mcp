@@ -2,10 +2,10 @@
 import { randomUUID } from 'node:crypto';
 import type {
   CLGSidecar,
+  EvaluateDecisionParams,
   EvaluateDecisionResult,
   Receipt,
   ReceiptParams,
-  EvaluateDecisionParams,
 } from '@clgplatform/sdk';
 import { CLGDeniedError, CLGToolExecutionError, CLGUnreachableError } from './errors.js';
 import type { DecisionEnvelope, NormalizedCLGConfig } from './types.js';
@@ -14,9 +14,11 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === 'object' ? (value as Record<string, unknown>) : {};
 }
 
-function makeEnvelope(toolName: string, toolInput: unknown, config: NormalizedCLGConfig): DecisionEnvelope {
-  const taskInput = config.redact ? config.redact(toolInput) : toolInput;
+function maybeRedact(config: NormalizedCLGConfig, value: unknown): unknown {
+  return config.redact ? config.redact(value) : value;
+}
 
+function makeEnvelope(toolName: string, toolInput: unknown, config: NormalizedCLGConfig): DecisionEnvelope {
   const base: DecisionEnvelope = {
     workflow_id: config.workflowId,
     task_id: randomUUID(),
@@ -24,7 +26,7 @@ function makeEnvelope(toolName: string, toolInput: unknown, config: NormalizedCL
     mandate_ref: config.mandateRef,
     decision_type: 'tool-call',
     decision_value: toolName,
-    task_input: taskInput,
+    task_input: maybeRedact(config, toolInput),
     timestamp: new Date().toISOString(),
   };
 
@@ -70,8 +72,8 @@ export function wrapToolHandler<TArgs extends unknown[], TResult>(
             workflow_id: config.workflowId,
             task_id: randomUUID(),
             agent_id: config.agentId,
-            task_input: config.redact ? config.redact(firstArg) : firstArg,
-            output: result,
+            task_input: maybeRedact(config, firstArg),
+            output: maybeRedact(config, result),
             decision_type: 'tool-outcome-unverified',
             decision_value: toolName,
           });
@@ -85,17 +87,19 @@ export function wrapToolHandler<TArgs extends unknown[], TResult>(
             workflow_id: config.workflowId,
             task_id: randomUUID(),
             agent_id: config.agentId,
-            task_input: config.redact ? config.redact(firstArg) : firstArg,
-            output: {
+            task_input: maybeRedact(config, firstArg),
+            output: maybeRedact(config, {
               status: 'failed',
               error_name: toolError instanceof Error ? toolError.name : 'Error',
               error_message: toolError instanceof Error ? toolError.message : String(toolError),
-            },
+            }),
             decision_type: 'tool-outcome-unverified',
             decision_value: toolName,
           });
         } catch (receiptError) {
-          config.onError?.(new CLGUnreachableError('Failed to submit unverified failed outcome receipt', receiptError));
+          config.onError?.(
+            new CLGUnreachableError('Failed to submit unverified failed outcome receipt', receiptError),
+          );
         }
         throw toolError;
       }
@@ -114,47 +118,63 @@ export function wrapToolHandler<TArgs extends unknown[], TResult>(
 
     try {
       const result = await Promise.resolve(originalHandler(...args));
-
       const decisionReceipt = asRecord(decisionResult.receipt);
       const previous = typeof decisionReceipt.receipt_hash === 'string' ? [decisionReceipt.receipt_hash] : undefined;
 
-      await createOutcomeReceipt(sidecar, config, {
-        workflow_id: config.workflowId,
-        task_id: randomUUID(),
-        agent_id: config.agentId,
-        task_input: config.redact ? config.redact(firstArg) : firstArg,
-        output: config.redact ? config.redact(result) : result,
-        decision_type: 'tool-outcome',
-        decision_value: toolName,
-        previous_receipt_hashes: previous,
-      });
+      try {
+        await createOutcomeReceipt(sidecar, config, {
+          workflow_id: config.workflowId,
+          task_id: randomUUID(),
+          agent_id: config.agentId,
+          task_input: maybeRedact(config, firstArg),
+          output: maybeRedact(config, result),
+          decision_type: 'tool-outcome',
+          decision_value: toolName,
+          previous_receipt_hashes: previous,
+        });
+      } catch (receiptError) {
+        config.onError?.(
+          new CLGUnreachableError(
+            'Outcome receipt submission failed after successful tool execution. Tool result returned but not recorded in CLG chain.',
+            receiptError,
+          ),
+        );
+      }
 
       return result;
-    } catch (error) {
+    } catch (toolError) {
       const decisionReceipt = asRecord(decisionResult.receipt);
       const previous = typeof decisionReceipt.receipt_hash === 'string' ? [decisionReceipt.receipt_hash] : undefined;
 
-      await createOutcomeReceipt(sidecar, config, {
-        workflow_id: config.workflowId,
-        task_id: randomUUID(),
-        agent_id: config.agentId,
-        task_input: config.redact ? config.redact(firstArg) : firstArg,
-        output: {
-          status: 'failed',
-          error_name: error instanceof Error ? error.name : 'Error',
-          error_message: error instanceof Error ? error.message : String(error),
-        },
-        decision_type: 'tool-outcome-failed',
-        decision_value: toolName,
-        previous_receipt_hashes: previous,
-      });
+      try {
+        await createOutcomeReceipt(sidecar, config, {
+          workflow_id: config.workflowId,
+          task_id: randomUUID(),
+          agent_id: config.agentId,
+          task_input: maybeRedact(config, firstArg),
+          output: maybeRedact(config, {
+            status: 'failed',
+            error_name: toolError instanceof Error ? toolError.name : 'Error',
+            error_message: toolError instanceof Error ? toolError.message : String(toolError),
+          }),
+          decision_type: 'tool-outcome-failed',
+          decision_value: toolName,
+          previous_receipt_hashes: previous,
+        });
+      } catch (receiptError) {
+        config.onError?.(
+          new CLGUnreachableError(
+            'Failure outcome receipt submission failed after tool crash. Original tool error is being re-thrown.',
+            receiptError,
+          ),
+        );
+      }
 
       const wrapped = new CLGToolExecutionError(
         `Tool '${toolName}' failed after CLG approval`,
         toolName,
-        error,
+        toolError,
       );
-      config.onError?.(wrapped);
       throw wrapped;
     }
   };
