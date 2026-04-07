@@ -1,0 +1,6 @@
+{
+  "ref": "mandates/upptec-demo",
+  "allowedDecisionTypes": ["tool-call", "tool-outcome"],
+  "allowedDecisionValues": ["create-invoice", "lookup-customer"],
+  "forbiddenFields": ["payment.account.number"]
+}

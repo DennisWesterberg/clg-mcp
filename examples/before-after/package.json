@@ -1,0 +1,19 @@
+{
+  "name": "@clgplatform/mcp-example-before-after",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:without": "tsx without-clg.ts",
+    "start:with": "tsx with-clg.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clgplatform/mcp": "file:../..",
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3",
+    "@types/node": "^22.19.17"
+  }
+}
