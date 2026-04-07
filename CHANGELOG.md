@@ -14,19 +14,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Outcome receipts chained from decision receipts on success
 - Failure outcome receipts on tool execution errors
 - Unverified outcome receipts in fail-open mode
-- redactPaths helper for masking sensitive fields
-- Configurable redact and beforeSend hooks
+- `redactPaths` helper for masking sensitive fields
+- Configurable `redact` and `beforeSend` hooks
 - Complete error type hierarchy
-- fail-closed and fail-open failure modes
-- Full observability via onDecision, onOutcome, onError callbacks
+- Fail-closed and fail-open failure modes
+- Full observability via `onDecision`, `onOutcome`, `onError` callbacks
 - Business Source License 1.1
 
 ### Changed
 
 - Complete rewrite from v0.1.0 prototype
-- Package renamed from clg-mcp to @clgplatform/mcp
+- Package renamed from `clg-mcp` to `@clgplatform/mcp`
 - License changed from MIT to BUSL-1.1
 
 ### Removed
 
-- v0.1.0 CLGMCPWrapper class (migration guide in docs/migration.md if you actually used the prototype — you probably shouldn't have)
+- v0.1.0 `CLGMCPWrapper` class
+
+### Known limitations
+
+- No local receipt verification in v1.
+- No replay or audit export API in v1.
+- No built-in compliance guarantee; package provides technical controls only.
+- Mandates are managed in CLG platform, not in this package.
+- Interception is forward-only: register tools after `withCLG()`.

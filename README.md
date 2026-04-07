@@ -1,6 +1,11 @@
 # @clgplatform/mcp
 
-Official CLG wrapper for Model Context Protocol.
+Tamper-evident decision and outcome receipts for Model Context Protocol tool calls, with real-time mandate enforcement via the CLG platform.
+
+## Scope
+
+- In scope: MCP tool call interception, decision evaluation, signed decision and outcome receipts, redaction hooks, fail-closed and fail-open modes.
+- Out of scope: MCP resources, MCP prompts, transports other than standard MCP server, verification tooling, multi-workflow chaining.
 
 ![CI](https://img.shields.io/badge/ci-pending-lightgrey)
 ![Version](https://img.shields.io/badge/version-1.0.0--beta.1-blue)
@@ -8,13 +13,21 @@ Official CLG wrapper for Model Context Protocol.
 
 ## What it does
 
-`@clgplatform/mcp` wraps MCP tool execution with mandate evaluation and signed CLG receipts. It provides deterministic, replayable decision and outcome tracing for every guarded tool call.
+`@clgplatform/mcp` wraps MCP tool calls with CLG mandate checks and receipt creation. It gives operational auditability through signed chained receipts and explicit decision/outcome events.
+
+## What this package does NOT do
+
+- Does not perform local verification of receipts (verification is a future capability).
+- Does not provide a replay or audit export API in v1.
+- Does not guarantee AI Act compliance by itself; it provides technical controls that support an organization's compliance program.
+- Does not manage mandates — mandates are defined and stored in the CLG platform.
+- Does not intercept tools registered before `withCLG()` is applied; see Compatibility for the supported pattern.
 
 ## Why
 
-- Supports AI Act aligned governance and auditability patterns.
-- Enforces mandate-based accountability before tool execution.
-- Produces cryptographically chained decision/outcome evidence.
+- Supports governance-focused auditability for AI tool execution.
+- Enforces mandate checks before MCP tool calls.
+- Produces signed chained receipts for decision and outcome events.
 
 ## Installation
 
@@ -34,11 +47,8 @@ const server = withCLG(new McpServer({ name: 'demo', version: '1.0.0' }), {
   mandateRef: 'mandates/default',
 });
 
-server.registerTool('echo', {
-  description: 'Echo input',
-  inputSchema: { text: { type: 'string' } },
-}, async (args) => ({
-  content: [{ type: 'text', text: String(args.text ?? '') }],
+server.registerTool('echo', { description: 'Echo' }, async () => ({
+  content: [{ type: 'text', text: 'ok' }],
 }));
 ```
 
@@ -61,15 +71,15 @@ server.registerTool('echo', {
 
 ## Mandate setup
 
-Create mandates in CLG platform and reference them via `mandateRef` in wrapper config. See CLG docs: https://clgplatform.com
+Create mandates in the CLG platform and reference them by `mandateRef` in wrapper config. See https://clgplatform.com.
 
 ## Failure modes
 
-See `docs/failure-modes.md` for fail-closed and fail-open guidance and recommendations.
+See `docs/failure-modes.md` for fail-closed vs fail-open guidance.
 
 ## Redaction
 
-Use `redactPaths` for deterministic masking before payloads leave process memory. See `docs/redaction.md`.
+Use `redactPaths` to mask sensitive fields before payloads leave process memory. See `docs/redaction.md`.
 
 ## Error handling
 
