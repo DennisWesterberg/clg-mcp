@@ -59,7 +59,7 @@
     "@modelcontextprotocol/sdk": ">=1.0.0 <2.0.0"
   },
   "dependencies": {
-    "@clgplatform/sdk": "^1.1.0"
+    "@clgplatform/sdk": "^1.2.0"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
