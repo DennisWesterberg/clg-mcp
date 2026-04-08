@@ -2,6 +2,8 @@
 
 Tamper-evident decision and outcome receipts for Model Context Protocol tool calls, with real-time mandate enforcement via the CLG platform.
 
+Part of the [CLG (Causal Liability Gateway)](https://clgplatform.com) product suite — a system that makes AI actions verifiable, mandate-bound, and technically auditable.
+
 ## Scope
 
 - In scope: MCP tool call interception, decision evaluation, signed decision and outcome receipts, redaction hooks, fail-closed and fail-open modes.
