@@ -49,6 +49,8 @@ npm install @clgplatform/mcp
 - mandate reference (`mandateRef`)
 - MCP server using the official MCP SDK (`@modelcontextprotocol/sdk`)
 
+To try this against CLG Platform, use your CLG Platform account on clgplatform.com to obtain the API key, agent id, and mandate reference needed for the quick start below.
+
 ## Quick start
 
 ```ts
